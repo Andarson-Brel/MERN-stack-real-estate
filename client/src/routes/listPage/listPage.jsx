@@ -10,7 +10,7 @@ function ListPage() {
     const [posts, setPosts] = useState([]);
 
     useEffect(() => {
-        axios.get('https://test-deployment-2-krcx.onrender.com/api/posts')
+        apiRequest.get('/api/posts')
             .then(response => {
                 setPosts(response.data);
             })
