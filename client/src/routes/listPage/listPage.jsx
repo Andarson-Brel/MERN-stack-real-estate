@@ -4,6 +4,7 @@ import Card from "../../components/card/Card";
 import Map from "../../components/map/Map";
 import { Suspense } from "react";
 import axios from 'axios';
+import apiRequest from "../../lib/apiRequest";
 import React, { useState, useEffect } from 'react';
 
 function ListPage() {
