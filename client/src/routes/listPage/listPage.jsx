@@ -4,14 +4,15 @@ import Card from "../../components/card/Card";
 import Map from "../../components/map/Map";
 import { Suspense } from "react";
 import axios from "axios";
+import apiRequest from "../../lib/apiRequest";
 import React, { useState, useEffect } from "react";
 
 function ListPage() {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
-    axios
-      .get("https://test-deployment-2-krcx.onrender.com/api/posts")
+    apiRequest
+      .get("/posts")
       .then((response) => {
         setPosts(response.data);
       })
@@ -34,10 +35,7 @@ function ListPage() {
         </div>
       </div>
       <div className="mapContainer">
-        <Suspense fallback={<p>Loading...</p>}>
-          {/* Pass the posts state to the Map component */}
-          <Map items={posts} />
-        </Suspense>
+        <Map items={posts} />
       </div>
     </div>
   );
