@@ -11,7 +11,7 @@ function ListPage() {
     const [posts, setPosts] = useState([]);
 
     useEffect(() => {
-        apiRequest.get('/api/posts')
+        apiRequest.get('/posts')
             .then(response => {
                 setPosts(response.data);
             })
