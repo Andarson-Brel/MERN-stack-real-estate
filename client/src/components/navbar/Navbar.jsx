@@ -34,14 +34,16 @@ function Navbar() {
         <div className="right">
           {currentUser ? (
             <div className="userCont">
-              <img
-                src={
-                  currentUser.avatar
-                    ? currentUser.avatar
-                    : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
-                }
-                alt=""
-              />
+              <Link to={"/profile"}>
+                <img
+                  src={
+                    currentUser.avatar
+                      ? currentUser.avatar
+                      : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                  }
+                  alt=""
+                />
+              </Link>
               <span>{currentUser.userName}</span>
 
               <Link to="/profile" className="profile">
@@ -65,6 +67,7 @@ function Navbar() {
               onClick={handleIsOpen}
               className={`${isOpen ? " img-active" : " imginactive"}`}
             />
+            {number > 0 && <div className="notification">{number}</div>}
           </div>
           <div className={`${isOpen ? "menu active" : "menu"}`}>
             <Link to={"/"}>Home</Link>
