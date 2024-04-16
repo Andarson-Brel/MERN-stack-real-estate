@@ -2,42 +2,43 @@ import "./listPage.scss";
 import Filter from "../../components/filter/Filter";
 import Card from "../../components/card/Card";
 import Map from "../../components/map/Map";
+import { Await, useLoaderData } from "react-router-dom";
 import { Suspense } from "react";
-import axios from "axios";
-import apiRequest from "../../lib/apiRequest";
-import React, { useState, useEffect } from "react";
+import Loader from "../../components/loader/loader";
 
 function ListPage() {
-  const [posts, setPosts] = useState([]);
-
-  useEffect(() => {
-    apiRequest
-      .get("/posts")
-      .then((response) => {
-        setPosts(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching posts:", error);
-      });
-  }, []);
+  const data = useLoaderData();
 
   return (
-    <div className="listPage">
+    <section className="listPage">
       <div className="listContainer">
-        <div className="wrapper">
-          <Filter />
-          <Suspense fallback={<p>Loading...</p>}>
-            {/* Map over the posts state */}
-            {posts.map((post) => (
-              <Card key={post.id} item={post} />
-            ))}
+        <Filter />
+        <div className="cardsContainer">
+          <Suspense fallback={<Loader />}>
+            <Await
+              resolve={data.postResponse}
+              errorElement={<p>Error loading posts!</p>}
+            >
+              {(postResponse) =>
+                postResponse.data.map((post) => (
+                  <Card key={post.id} item={post} />
+                ))
+              }
+            </Await>
           </Suspense>
         </div>
       </div>
       <div className="mapContainer">
-        <Map items={posts} />
+        <Suspense fallback={<Loader />}>
+          <Await
+            resolve={data.postResponse}
+            errorElement={<p>Error loading posts!</p>}
+          >
+            {(postResponse) => <Map items={postResponse.data} />}
+          </Await>
+        </Suspense>
       </div>
-    </div>
+    </section>
   );
 }
 

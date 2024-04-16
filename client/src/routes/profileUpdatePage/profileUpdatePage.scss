@@ -1,9 +1,10 @@
+@import "../../responsive.scss";
 .profileUpdatePage {
   height: 100%;
   display: flex;
 
   .formContainer {
-    flex:3;
+    flex: 3;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -16,9 +17,6 @@
         display: flex;
         flex-direction: column;
         gap: 5px;
-
-        label {
-        }
 
         input {
           padding: 20px;
@@ -47,9 +45,14 @@
     align-items: center;
     justify-content: center;
 
-    .avatar{
-      width: 50%;
+    .avatar {
+      width: 200px;
+      height: 200px;
       object-fit: cover;
+      @include xsm {
+        width: 80px;
+        height: 80px;
+      }
     }
   }
 }

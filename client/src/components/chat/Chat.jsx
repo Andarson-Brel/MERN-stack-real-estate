@@ -1,60 +1,81 @@
-import { useContext, useEffect, useRef, useState } from "react";
 import "./chat.scss";
+import Excerpt from "../excerpt/Excerpt";
+import { useContext, useEffect, useRef, useState } from "react";
+import { useQuery } from "react-query";
+import { fetchChats } from "../../lib/apiContext";
+import { useNotificationStore } from "../../lib/notificationStore";
 import { AuthContext } from "../../context/AuthContext";
 import apiRequest from "../../lib/apiRequest";
 import { format } from "timeago.js";
 import { SocketContext } from "../../context/SocketContext";
-import { useNotificationStore } from "../../lib/notificationStore";
+import Loader from "../loader/loader";
 import { useSearchParams } from "react-router-dom";
 
-function Chat({ chats }) {
+function Chat() {
   const [chat, setChat] = useState(null);
-  const { currentUser } = useContext(AuthContext);
-  const { socket } = useContext(SocketContext);
+  const [isFocused, setIsFocused] = useState(false);
   const [chatCreated, setChatCreated] = useState(false);
-
-  const messageEndRef = useRef();
+  const [messageText, setMessageText] = useState("");
 
   const [searchParams, setSearchPrams] = useSearchParams();
   const receiverId = searchParams.get("receiverId");
   const productType = searchParams.get("type");
   const productTitle = searchParams.get("productTitle");
 
+  const messageEndRef = useRef();
   const decrease = useNotificationStore((state) => state.decrease);
+  const { currentUser } = useContext(AuthContext);
+  const { data: chats, isLoading } = useQuery({
+    queryFn: () => fetchChats(),
+  });
+  const { socket } = useContext(SocketContext);
 
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+  };
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat]);
 
   const handleOpenChat = async (id, receiver) => {
     try {
-      const res = await apiRequest("/chats/" + id);
+      const res = await apiRequest.get(`/chats/${id}`);
       if (!res.data.seenBy.includes(currentUser.id)) {
         decrease();
       }
-      setChat({ ...res.data, receiver });
-    } catch (err) {
-      console.log(err);
+      if (res.status === 200) {
+        // console.log(res.data);
+        setChat({ ...res.data, receiver });
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const formData = new FormData(e.target);
     const text = formData.get("text");
-
     if (!text) return;
     try {
-      const res = await apiRequest.post("/messages/" + chat.id, { text });
-      setChat((prev) => ({ ...prev, messages: [...prev.messages, res.data] }));
-      e.target.reset();
-      socket.emit("sendMessage", {
-        receiverId: chat.receiver.id,
-        data: res.data,
-      });
-    } catch (err) {
-      console.log(err);
+      const res = await apiRequest.post(`/messages/${chat.id}`, { text });
+      if (res.status === 200) {
+        setChat((prev) => ({
+          ...prev,
+          messages: [...prev.messages, res.data],
+        }));
+        e.target.reset();
+        socket.emit("sendMessage", {
+          receiverId: chat.receiver.id,
+          data: res.data,
+        });
+      }
+      // console.log(res);
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -76,12 +97,11 @@ function Chat({ chats }) {
       });
     }
     return () => {
-      socket.off("getMessage");
+      socket?.off("getMessage");
     };
   }, [socket, chat]);
 
   useEffect(() => {
-    if (chatCreated) return;
     const openChatForReceiver = async () => {
       if (receiverId && chats && !chatCreated) {
         setChatCreated(true);
@@ -89,15 +109,22 @@ function Chat({ chats }) {
           (chat) => chat.receiver.id === receiverId
         );
         if (targetChat) {
+          // Chat found, open it
           handleOpenChat(targetChat.id, targetChat.receiver);
-
+          if (productType && productTitle) {
+            setIsFocused(true);
+            setMessageText(
+              `Hello, I want to ${productType} your listing of ${productTitle}`
+            );
+          }
           setSearchPrams("");
         } else {
+          // Chat not found, create a new chat
           try {
             const res = await apiRequest.post("/chats", { receiverId });
             if (res.status === 200) {
+              // New chat created successfully, open it
               handleOpenChat(res.data.id, res.data.receiver);
-              // console.log(res.data.id);
               setSearchPrams("");
             } else {
               console.log("Failed to create chat:", res.data.message);
@@ -110,36 +137,62 @@ function Chat({ chats }) {
     };
 
     openChatForReceiver();
-  }, [receiverId, chats]);
+  }, [receiverId, chats, chatCreated]);
 
   return (
     <div className="chat">
-      <div className="messages">
+      <section className="messages">
         <h1>Messages</h1>
-        {chats?.map((c) => (
-          <div
-            className="message"
-            key={c.id}
-            style={{
-              backgroundColor:
-                c.seenBy.includes(currentUser.id) || chat?.id === c.id
-                  ? "white"
-                  : "#fecd514e",
-            }}
-            onClick={() => handleOpenChat(c.id, c.receiver)}
-          >
-            <img src={c?.receiver?.avatar || "/noavatar.jpg"} alt="" />
-            <span>{c.receiver.username}</span>
-            <p>{c.lastMessage}</p>
-          </div>
-        ))}
-      </div>
+
+        {isLoading ? (
+          <Loader />
+        ) : (
+          chats?.map((chat) => {
+            return (
+              <div
+                className="message"
+                key={chat.id}
+                style={{
+                  backgroundColor: chat.seenBy.includes(currentUser.id)
+                    ? "white"
+                    : "#fecd514e",
+                }}
+                onClick={() => handleOpenChat(chat.id, chat.receiver)}
+              >
+                <img
+                  src={
+                    chat.receiver.avatar ||
+                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                  }
+                  alt=""
+                />
+                <div className="content">
+                  <span
+                    className="
+                  userName"
+                  >
+                    <b>{chat.receiver.username}</b>
+                  </span>
+
+                  <Excerpt text={chat.lastMessage} maxLength={30} />
+                </div>
+              </div>
+            );
+          })
+        )}
+      </section>
       {chat && (
-        <div className="chatBox">
+        <section className="chatBox">
           <div className="top">
             <div className="user">
-              <img src={chat.receiver.avatar || "noavatar.jpg"} alt="" />
-              {chat.receiver.username}
+              <img
+                src={
+                  chat?.receiver?.avatar ||
+                  "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                }
+                alt=""
+              />
+              <span className="username">{chat?.receiver?.username}</span>
             </div>
             <span className="close" onClick={() => setChat(null)}>
               X
@@ -148,7 +201,8 @@ function Chat({ chats }) {
           <div className="center">
             {chat.messages.map((message) => (
               <div
-                className="chatMessage"
+                className="chatMessage "
+                key={message.id}
                 style={{
                   alignSelf:
                     message.userId === currentUser.id
@@ -157,7 +211,6 @@ function Chat({ chats }) {
                   textAlign:
                     message.userId === currentUser.id ? "right" : "left",
                 }}
-                key={message.id}
               >
                 <p>{message.text}</p>
                 <span>{format(message.createdAt)}</span>
@@ -165,11 +218,20 @@ function Chat({ chats }) {
             ))}
             <div ref={messageEndRef}></div>
           </div>
-          <form onSubmit={handleSubmit} className="bottom">
-            <textarea name="text"></textarea>
-            <button>Send</button>
+
+          <form className="bottom" onSubmit={handleSubmit}>
+            <textarea
+              name="text"
+              id="myTextarea"
+              placeholder={isFocused ? "" : "Type Message"}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              defaultValue={messageText}
+            ></textarea>
+
+            <button type="submit">Send</button>
           </form>
-        </div>
+        </section>
       )}
     </div>
   );

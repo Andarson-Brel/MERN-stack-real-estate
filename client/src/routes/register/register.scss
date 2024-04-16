@@ -1,7 +1,11 @@
+@import "../../responsive.scss";
+
 .registerPage {
   height: 100%;
   display: flex;
-
+  @include xsm {
+    padding: 10px;
+  }
   .formContainer {
     flex: 3;
     height: 100%;
@@ -45,6 +49,12 @@
         border-bottom: 1px solid gray;
         width: max-content;
       }
+      @include xsm {
+        width: 100%;
+      }
+    }
+    @include xsm {
+      width: 60%;
     }
   }
 
@@ -56,6 +66,9 @@
     justify-content: center;
     img {
       width: 100%;
+    }
+    @include xsm {
+      display: none;
     }
   }
 }

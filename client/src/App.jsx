@@ -14,6 +14,8 @@ import {
   singlePageLoader,
 } from "./lib/loaders";
 import Chat from "./components/chat/Chat";
+import About from "./routes/about/About";
+import Agent from "./routes/agent/Agent";
 
 function App() {
   const router = createBrowserRouter([
@@ -24,6 +26,14 @@ function App() {
         {
           path: "/",
           element: <HomePage />,
+        },
+        {
+          path: "/about",
+          element: <About />,
+        },
+        {
+          path: "/agents",
+          element: <Agent />,
         },
         {
           path: "/list",

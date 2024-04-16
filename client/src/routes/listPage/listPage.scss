@@ -5,25 +5,35 @@
   height: 100%;
 
   .listContainer {
-    flex: 3;
+    flex: 60%;
     height: 100%;
+    padding: 50px;
+    // overflow-y: scroll;
 
-    .wrapper{
-      height: 100%;
-      padding-right: 50px;
+    .cardsContainer {
       display: flex;
       flex-direction: column;
-      gap: 50px;
       overflow-y: scroll;
+      overflow-x: hidden;
+      gap: 30px;
+      padding-top: 30px;
       padding-bottom: 50px;
+      max-height: 400px;
+    }
+    @include md {
+      padding: 10px 30px;
+    }
+    @include sm {
+      // gap: 20px;
+      padding: 5px 20px;
     }
   }
   .mapContainer {
-    flex: 2;
+    flex: 40%;
     height: 100%;
     background-color: #fcf5f3;
 
-    @include md{
+    @include md {
       display: none;
     }
   }

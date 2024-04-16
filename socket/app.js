@@ -2,7 +2,7 @@ import { Server } from "socket.io";
 
 const io = new Server({
   cors: {
-    origin: "https://main--test-estateapp.netlify.app",
+    origin: "https://mern-stack-real-estate-web-app.netlify.app",
   },
 });
 
