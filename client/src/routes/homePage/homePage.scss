@@ -4,6 +4,10 @@
   display: flex;
   align-items: center;
   width: 100%;
+  @include sm {
+    height: initial;
+    overflow-y: scroll;
+  }
   .textContainer {
     // width: 60%;
     display: flex;
@@ -16,7 +20,12 @@
       font-size: 64px;
       font-weight: bold;
       @include sm {
-        font-size: 44px;
+        font-size: 30px;
+      }
+    }
+    .description {
+      @include sm {
+        font-size: 12px;
       }
     }
     .boxes {
@@ -28,14 +37,21 @@
       h2 {
         font-size: 20px;
         font-weight: 300;
+        @include sm {
+          font-size: 16px;
+        }
       }
     }
     @include md {
       padding: 30px;
+      padding-top: 60px;
+      height: initial;
     }
     @include sm {
       gap: 20px;
       padding: 20px;
+      padding-top: 60px;
+      height: 100vh;
     }
   }
   .imgContainer {
